@@ -8,17 +8,18 @@ import ru.spb.awk.driver.for1c.jdbc.IColumn;
 
 
 /**
- *
+ * Class Field1C is representation field record in table 1cd file.
  * @author Василий Казьмин
  */
 public class Field1C implements IColumn {
+    
     private String name;
     private TypeField1C type;
     private int lenght;
     private boolean nullable;
     private int precision;
     private boolean ignoreCase;
-    private Table1C source;
+    private final Table1C source;
     
     public Field1C(Table1C source) {
         this.source = source;
@@ -57,6 +58,7 @@ public class Field1C implements IColumn {
     }
     
     
+    @Override
     public int getSize() {
         int size = 0;
         if(nullable) {

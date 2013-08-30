@@ -15,6 +15,7 @@ import java.util.List;
  * @author Василий Казьмин
  */
 public class Block {
+    
     private static IBlockReader reader;
 
     public static IBlockReader getBlockReader() {
@@ -23,6 +24,7 @@ public class Block {
         }
         return reader;
     }
+    
     int offset = 0;
     Head head;
     List<Integer> data;

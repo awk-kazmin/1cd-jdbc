@@ -4,7 +4,7 @@
  */
 package ru.spb.awk.driver.for1c.parcer;
 
-import ru.spb.awk.driver.for1c.jdbc.Table;
+import ru.spb.awk.driver.for1c.jdbc.TableBeen;
 import java.sql.SQLSyntaxErrorException;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,17 +13,17 @@ import java.util.List;
  *
  * @author Василий Казьмин
  */
-public class TablesBuilder extends AbstractBuilder<List<Table>> {
-    List<Table> tables = new ArrayList<>();
+public class TablesBuilder extends AbstractBuilder<List<TableBeen>> {
+    List<TableBeen> tables = new ArrayList<>();
 
     @Override
-    public List<Table> create() throws SQLSyntaxErrorException {
+    public List<TableBeen> create() throws SQLSyntaxErrorException {
         return tables;
     }
 
     @Override
     public void appendName(String source, String name, String alias) throws SQLSyntaxErrorException {
-        tables.add(new Table(name, alias));
+        tables.add(new TableBeen(name, alias));
     }
     
     
