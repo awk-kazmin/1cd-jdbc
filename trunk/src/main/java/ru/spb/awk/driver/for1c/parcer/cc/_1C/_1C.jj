@@ -1,0 +1,240 @@
+
+/*
+ * Copyright © 2002 Sun Microsystems, Inc., 4150 Network Circle, Santa Clara,
+ * California 95054, U.S.A. All rights reserved.  Sun Microsystems, Inc. has
+ * intellectual property rights relating to technology embodied in the product
+ * that is described in this document. In particular, and without limitation,
+ * these intellectual property rights may include one or more of the U.S.
+ * patents listed at http://www.sun.com/patents and one or more additional
+ * patents or pending patent applications in the U.S. and in other countries.
+ * U.S. Government Rights - Commercial software. Government users are subject
+ * to the Sun Microsystems, Inc. standard license agreement and applicable
+ * provisions of the FAR and its supplements.  Use is subject to license terms.
+ * Sun,  Sun Microsystems,  the Sun logo and  Java are trademarks or registered
+ * trademarks of Sun Microsystems, Inc. in the U.S. and other countries.  This
+ * product is covered and controlled by U.S. Export Control laws and may be
+ * subject to the export or import laws in other countries.  Nuclear, missile,
+ * chemical biological weapons or nuclear maritime end uses or end users,
+ * whether direct or indirect, are strictly prohibited.  Export or reexport
+ * to countries subject to U.S. embargo or to entities identified on U.S.
+ * export exclusion lists, including, but not limited to, the denied persons
+ * and specially designated nationals lists is strictly prohibited.
+ */
+
+
+options {
+  LOOKAHEAD = 1;
+  CHOICE_AMBIGUITY_CHECK = 2;
+  OTHER_AMBIGUITY_CHECK = 1;
+  STATIC = false;
+  DEBUG_PARSER = false;
+  DEBUG_LOOKAHEAD = false;
+  DEBUG_TOKEN_MANAGER = false;
+  ERROR_REPORTING = true;
+  JAVA_UNICODE_ESCAPE = false;
+  UNICODE_INPUT = false;
+  IGNORE_CASE = false;
+  USER_TOKEN_MANAGER = false;
+  USER_CHAR_STREAM = false;
+  BUILD_PARSER = true;
+  BUILD_TOKEN_MANAGER = true;
+  SANITY_CHECK = true;
+  FORCE_LA_CHECK = false;
+}
+
+PARSER_BEGIN(_1CParser)
+package ru.spb.awk.driver.for1c.parcer.cc._1C;
+import java.io.StringReader;
+import ru.spb.awk.driver.for1c.been.Field1C;
+import ru.spb.awk.driver.for1c.been.Index1C;
+import ru.spb.awk.driver.for1c.been.Table1C;
+import ru.spb.awk.driver.for1c.been.TypeField1C;
+
+
+public class _1CParser {
+
+  private Table1C table;
+  public static _1CParser makeParser(String query) {
+    StringReader reader = new StringReader(query);
+    _1CParser parser = new _1CParser(reader);
+    parser.table = new Table1C();
+    return parser;
+  }
+  public static void main(String args[]) throws ParseException {
+    _1CParser parser = new _1CParser(System.in);
+    parser.parse();
+  }
+
+}
+
+PARSER_END(_1CParser)
+
+SKIP:
+{
+    " " | ","  | "{" | "}" | "\t" | "\r" | "\n"
+}
+
+TOKEN : /* Numeric Constants */
+{
+	< S_NUMBER: <INTEGER>
+	    /*| <FLOAT> ( ["e","E"] ([ "-","+"])? <FLOAT> )?*/
+    	>
+  | 	< #FLOAT: <INTEGER>
+	    | <INTEGER> ( "." <INTEGER> )?
+	    | "." <INTEGER>
+    	>
+  | 	< #INTEGER: ( <DIGIT> )+ >
+  | 	< #DIGIT: ["0" - "9"] >
+}
+
+TOKEN:
+{
+    <K_FIELDS: "\"Fields\"">
+|   <K_INDEXES: "\"Indexes\"">
+|   <K_RECORDLOCK: "\"Recordlock\"">
+|   <K_FILES: "\"Files\"">
+}
+
+TOKEN:
+{
+    < S_IDENTIFIER: (<LETTER>)+ (<DIGIT> | <LETTER> |<SPECIAL_CHARS>)* >
+  | < #LETTER: ["a"-"z", "A"-"Z"] >
+  | < #SPECIAL_CHARS: "$" | "_" | "#">
+  | < S_BIND: ":" ( <S_NUMBER> | <S_IDENTIFIER> ("." <S_IDENTIFIER>)?) >
+  | < S_CHAR_LITERAL: "'" (~["'"])* "'" ("'" (~["'"])* "'")*>
+  | < S_QUOTED_IDENTIFIER: "\"" (~["\n","\r","\""])* "\"" >
+}
+
+
+public Table1C parse() :
+{}
+{
+  Name() <S_NUMBER>
+  <K_FIELDS> FieldList()
+  <K_INDEXES> IndexList()
+  <K_RECORDLOCK> Recordlock()
+  <K_FILES> Records() Blob() Index()
+  
+    <EOF>
+    {return table;}
+}
+
+void Name() :
+{}
+{
+    <S_QUOTED_IDENTIFIER> { table.setName(token.image.substring(1,token.image.length()-1)); }
+}
+
+void FieldList() :
+{}
+{
+    FieldItem() (FieldItem())*
+}
+
+void FieldItem() :
+{ 
+    Field1C field = new Field1C(table);
+}
+{
+    FieldName(field)
+    FieldType(field)
+    NullExists(field)
+    FieldLength(field)
+    FieldPrecision(field)
+    FieldCaseSensitive(field)
+}
+void IndexList() :
+{}
+{
+    (IndexItem())*
+}
+
+void IndexItem() :
+{
+    Index1C indx = new Index1C(table);
+}
+{
+    IndexName(indx)
+    IndexUnique(indx)
+    IndexFields(indx)
+}
+
+void IndexFields(Index1C field) :
+{}
+{
+    (<S_QUOTED_IDENTIFIER> 
+    <S_NUMBER>)*
+}
+
+void Recordlock() :
+{}
+{
+    <S_QUOTED_IDENTIFIER> { table.setRecordlock(token.image.equals("\"1\"")); }
+}
+
+void Records() :
+{}
+{
+    <S_NUMBER> { table.setRecordBlock(Integer.valueOf(token.image)); }
+}
+
+void Blob() :
+{}
+{
+    <S_NUMBER> { table.setBlobBlock(Integer.valueOf(token.image)); }
+}
+
+void Index() :
+{}
+{
+    <S_NUMBER> { table.setIndexBlock(Integer.valueOf(token.image)); }
+}
+
+void NullExists(Field1C field) :
+{}
+{
+    <S_NUMBER> { field.setNullable(token.image.equals("1")); }
+}
+
+
+void FieldLength(Field1C field) :
+{}
+{
+    <S_NUMBER> { field.setLength(Integer.valueOf(token.image)); }
+}
+
+void FieldPrecision(Field1C field) :
+{}
+{
+    <S_NUMBER> { field.setPrecision(Integer.valueOf(token.image)); }
+}
+
+void FieldCaseSensitive(Field1C field) :
+{}
+{
+    <S_QUOTED_IDENTIFIER> { field.setCaseSensitive(token.image.equals("\"CS\"")); }
+}
+
+void FieldName(Field1C field) :
+{}
+{
+    <S_QUOTED_IDENTIFIER> { field.setName(token.image.substring(1,token.image.length()-1)); }
+}
+
+void FieldType(Field1C field) :
+{}
+{
+    <S_QUOTED_IDENTIFIER> { field.setType(TypeField1C.fromString(token.image.substring(1,token.image.length()-1))); }
+}
+
+void IndexName(Index1C field) :
+{}
+{
+    <S_QUOTED_IDENTIFIER> { field.setName(token.image.substring(1,token.image.length()-1)); }
+}
+
+void IndexUnique(Index1C field) :
+{}
+{
+    <S_NUMBER> { field.setUnique(token.image.equals("1")); }
+}
