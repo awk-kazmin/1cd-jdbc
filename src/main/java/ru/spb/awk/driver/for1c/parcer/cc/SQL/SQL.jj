@@ -1,0 +1,255 @@
+
+/*
+ * Copyright © 2002 Sun Microsystems, Inc., 4150 Network Circle, Santa Clara,
+ * California 95054, U.S.A. All rights reserved.  Sun Microsystems, Inc. has
+ * intellectual property rights relating to technology embodied in the product
+ * that is described in this document. In particular, and without limitation,
+ * these intellectual property rights may include one or more of the U.S.
+ * patents listed at http://www.sun.com/patents and one or more additional
+ * patents or pending patent applications in the U.S. and in other countries.
+ * U.S. Government Rights - Commercial software. Government users are subject
+ * to the Sun Microsystems, Inc. standard license agreement and applicable
+ * provisions of the FAR and its supplements.  Use is subject to license terms.
+ * Sun,  Sun Microsystems,  the Sun logo and  Java are trademarks or registered
+ * trademarks of Sun Microsystems, Inc. in the U.S. and other countries.  This
+ * product is covered and controlled by U.S. Export Control laws and may be
+ * subject to the export or import laws in other countries.  Nuclear, missile,
+ * chemical biological weapons or nuclear maritime end uses or end users,
+ * whether direct or indirect, are strictly prohibited.  Export or reexport
+ * to countries subject to U.S. embargo or to entities identified on U.S.
+ * export exclusion lists, including, but not limited to, the denied persons
+ * and specially designated nationals lists is strictly prohibited.
+ */
+
+
+options {
+  LOOKAHEAD = 1;
+  CHOICE_AMBIGUITY_CHECK = 2;
+  OTHER_AMBIGUITY_CHECK = 1;
+  STATIC = false;
+  DEBUG_PARSER = false;
+  DEBUG_LOOKAHEAD = false;
+  DEBUG_TOKEN_MANAGER = false;
+  ERROR_REPORTING = true;
+  JAVA_UNICODE_ESCAPE = false;
+  UNICODE_INPUT = false;
+  IGNORE_CASE = false;
+  USER_TOKEN_MANAGER = false;
+  USER_CHAR_STREAM = false;
+  BUILD_PARSER = true;
+  BUILD_TOKEN_MANAGER = true;
+  SANITY_CHECK = true;
+  FORCE_LA_CHECK = false;
+}
+
+PARSER_BEGIN(SQLParser)
+package ru.spb.awk.driver.for1c.parcer.cc.SQL;
+
+import ru.spb.awk.driver.for1c.parcer.IBuilder;
+import java.io.StringReader;
+import java.sql.SQLSyntaxErrorException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class SQLParser {
+
+  private IBuilder builder;
+
+  public static SQLParser makeParser(String query, IBuilder builder) {
+    StringReader reader = new StringReader(query);
+    SQLParser parser = new SQLParser(reader);
+    parser.builder = builder;
+    return parser;
+  }
+  public static void main(String args[]) throws ParseException {
+    SQLParser parser = new SQLParser(System.in);
+      try {
+          parser.Input();
+      } catch (SQLSyntaxErrorException ex) {
+          Logger.getLogger(SQLParser.class.getName()).log(Level.SEVERE, null, ex);
+      }
+  }
+
+}
+
+PARSER_END(SQLParser)
+
+SKIP:
+{
+    " " | "\t" | "\r" | "\n"
+}
+
+TOKEN : /* KEYWORDS */
+{
+    <K_SELECT: "SELECT">
+|   <K_FROM:   "FROM"> 
+|   <K_AS:     "AS"> 
+|   <K_WHERE:  "WHERE"> 
+|   <K_AND:  "AND"> 
+|   <K_OR:  "OR">  
+}
+
+TOKEN :
+{
+    <S_OP: "=">
+}
+
+TOKEN : /* Numeric Constants */
+{
+	< S_NUMBER: <FLOAT>
+	    | <FLOAT> ( ["e","E"] ([ "-","+"])? <FLOAT> )?
+    	>
+  | 	< #FLOAT: <INTEGER>
+	    | <INTEGER> ( "." <INTEGER> )?
+	    | "." <INTEGER>
+    	>
+  | 	< #INTEGER: ( <DIGIT> )+ >
+  | 	< #DIGIT: ["0" - "9"] >
+}
+
+SPECIAL_TOKEN:
+{
+   <LINE_COMMENT: "--"(~["\r","\n"])*>
+|  <MULTI_LINE_COMMENT: "/*" (~["*"])* "*" ("*" | (~["*","/"] (~["*"])* "*"))* "/">
+}
+
+TOKEN:
+{
+    < S_IDENTIFIER: (<LETTER>)+ (<DIGIT> | <LETTER> |<SPECIAL_CHARS>)* >
+  | < #LETTER: ["a"-"z", "A"-"Z"] >
+  | < #SPECIAL_CHARS: "$" | "_" | "#">
+  | < S_BIND: ":" ( <S_NUMBER> | <S_IDENTIFIER> ("." <S_IDENTIFIER>)?) >
+  | < S_CHAR_LITERAL: "'" (~["'"])* "'" ("'" (~["'"])* "'")*>
+  | < S_QUOTED_IDENTIFIER: "\"" (~["\n","\r","\""])* "\"" >
+}
+
+void Input() throws SQLSyntaxErrorException :
+{}
+{
+  SelectStatement()[";" SelectStatement()] <EOF> { builder.end(); }
+}
+
+void SelectStatement() throws SQLSyntaxErrorException :
+{}
+{
+  Select()
+  [From()]
+  [Where()]
+}
+
+void Where() throws SQLSyntaxErrorException :
+{}
+{
+    <K_WHERE> { builder.appendWorld("WHERE"); } WhereList()
+}
+
+void WhereList() throws SQLSyntaxErrorException :
+{}
+{
+    WhereItem() ((<K_AND> | <K_OR>){builder.appendWorld(token.image);} WhereItem())*
+}
+
+void WhereItem() throws SQLSyntaxErrorException :
+{}
+{
+    LeftClause() [ <S_OP> {builder.appendOp(token.image);} RightClause() ]
+}
+
+void LeftClause() throws SQLSyntaxErrorException :
+{}
+{
+    Clause()
+}
+
+void RightClause() throws SQLSyntaxErrorException :
+{}
+{
+    Clause()
+}
+
+void Clause() throws SQLSyntaxErrorException :
+{}
+{
+    NamedField() | Expression()
+}
+
+
+void NamedField() throws SQLSyntaxErrorException :
+{String source=null, name=null;}
+{
+    (
+        LOOKAHEAD(2) source=ObjectName()"." name=ObjectName() // table.name
+    |   name = ObjectName() // column name
+    )
+    { builder.appendName(source, name, null); }
+}
+
+void Expression() throws SQLSyntaxErrorException :
+{}
+{
+    <S_NUMBER> 
+}
+
+
+
+void Select() throws SQLSyntaxErrorException :
+{}
+{
+    <K_SELECT> { builder.appendWorld("SELECT"); } SelectList()
+}
+
+void SelectList() throws SQLSyntaxErrorException : 
+{}
+{
+     "*" { builder.appendStar(); } | SelectItem() ("," SelectItem())*
+}
+
+void SelectItem() throws SQLSyntaxErrorException :
+{ String source=null, name=null, alias=null; }
+{
+    (
+        LOOKAHEAD(2) source = ObjectName()".*" {name="*";}// table.*
+      | LOOKAHEAD(4) ObjectName()"." source = ObjectName() ".*"  {name="*";}// cataloge.table.*
+      | LOOKAHEAD(4) ObjectName()"." source = ObjectName()"." name = ObjectName() // cataloge.table.name
+      | LOOKAHEAD(2) source = ObjectName()"." name = ObjectName() // table.name
+      | name = ObjectName() // column name
+    )
+    [ [ <K_AS> ] alias=SelectItemAlias()]
+    { builder.appendName(source, name, alias); }
+}
+
+String SelectItemAlias():
+{ String name = null; }
+{
+    name = ObjectName() { return name; }
+}
+
+String ObjectName():
+{}
+{
+    <S_IDENTIFIER>        {return token.image;}
+  | <S_QUOTED_IDENTIFIER> {String s = token.image; return s.substring(1, s.length() - 1);}
+}
+
+void From() throws SQLSyntaxErrorException :
+{}
+{
+    <K_FROM> { builder.appendWorld("FROM"); } FromList()
+}
+
+void FromList() throws SQLSyntaxErrorException :
+{}
+{
+    FromItem() ("," FromItem())*
+}
+
+void FromItem() throws SQLSyntaxErrorException :
+{ String name=null, alias=null; }
+{
+    (
+        LOOKAHEAD(2) ObjectName()"." name=ObjectName() // catalog.table
+       | name=ObjectName() // table
+    )
+    [ [ <K_AS> ] alias=SelectItemAlias() ] 
+    { builder.appendName(null,name,alias); }
+}
