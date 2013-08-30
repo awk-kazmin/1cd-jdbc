@@ -33,7 +33,7 @@ public class Select {
     private List<byte[]> records = new ArrayList<>();
     private int _cursor = -1;
     
-    public Select(FileHelper helper, List<Field> fields, List<Table> tables, WhereGroup where) throws SQLException {
+    public Select(FileHelper helper, List<Field> fields, List<TableBeen> tables, WhereGroup where) throws SQLException {
         this.helper = helper;
         if(fields==null) {
             throw new SQLSyntaxErrorException("SELECT ?");
@@ -50,7 +50,7 @@ public class Select {
         }
     }
 
-    private Table1C getSource(Table t) throws SQLSyntaxErrorException {
+    private Table1C getSource(TableBeen t) throws SQLSyntaxErrorException {
         try {
             String source = t.getSource();
             if(source == null) {
@@ -76,8 +76,8 @@ public class Select {
         }
     }
 
-    private void makeTables(List<Table> tables) throws SQLSyntaxErrorException, SQLDataException {
-        for(Table t : tables) {
+    private void makeTables(List<TableBeen> tables) throws SQLSyntaxErrorException, SQLDataException {
+        for(TableBeen t : tables) {
             if(this.tables.containsKey(t.getAlias())) {
                 throw new SQLSyntaxErrorException("Table "+t.getAlias()+" allready exists in query.");
             }
@@ -173,7 +173,7 @@ public class Select {
         }
     }
 
-    private void makeRecords(WhereGroup where) throws IOException {
+    private void makeRecords(WhereGroup where) throws IOException, SQLSyntaxErrorException, SQLException {
         if (tables_cursors.size() == 1) {
             Cursor1C c = tables_cursors.values().iterator().next();
             for (c.first(); !c.isAfterLast(); c.next()) {
@@ -207,7 +207,7 @@ public class Select {
         return size;
     }
 
-    private byte[] makeRecord(Cursor1C source, Cursor1C target, WhereGroup where) {
+    private byte[] makeRecord(Cursor1C source, Cursor1C target, WhereGroup where) throws SQLSyntaxErrorException, SQLException {
         byte[] result = null;
         switch(where.test(source, target)) {
             case BOTH:

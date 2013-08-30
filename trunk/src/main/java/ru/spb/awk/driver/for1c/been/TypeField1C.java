@@ -23,6 +23,7 @@ public enum TypeField1C {
     ShortShadowVersion,
     Unknown;
     private byte byteLen = -1;
+    
     private final static String
             FIXED_BINARY = "B",
             BOOLEAN      = "L",
@@ -33,6 +34,7 @@ public enum TypeField1C {
             STRING       = "NT",
             BINARY       = "I",
             DATE_TIME    = "DT";
+    
     public static TypeField1C fromString(String type) {
         if(type.equalsIgnoreCase(FIXED_BINARY)) {
             return FixedBinary;

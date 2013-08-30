@@ -12,7 +12,7 @@ import java.util.List;
  *
  * @author Василий Казьмин
  */
-interface IBlockVisitor {
+public interface IBlockVisitor {
 
     public void visit(RandomAccessFile raf, Head head, List<Integer> data)  throws IOException;
     
