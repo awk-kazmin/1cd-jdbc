@@ -13,7 +13,7 @@ import java.util.List;
  *
  * @author Василий Казьмин
  */
-public class FielsBuilder extends AbstractBuilder<List<Field>> {
+public class FieldsBuilder extends AbstractBuilder<List<Field>> {
 
     private final List<Field> fields = new ArrayList<>();
 
@@ -21,7 +21,7 @@ public class FielsBuilder extends AbstractBuilder<List<Field>> {
      *
      * @param parent
      */
-    public FielsBuilder() {
+    public FieldsBuilder() {
     }
 
 

@@ -18,7 +18,7 @@ public class SelectBuilder extends AbstractBuilder<Select> {
     private static final String FROM = "FROM";
     private static final String WHERE = "WHERE";
     private IBuilder<?> builder = this;
-    private final FielsBuilder fielsBuilder;
+    private final FieldsBuilder fielsBuilder;
     private final TablesBuilder tablesBuilder;
     private final WhereBuilder whereBuilder;
     private final FileHelper helper;
@@ -26,7 +26,7 @@ public class SelectBuilder extends AbstractBuilder<Select> {
     public SelectBuilder(FileHelper helper) {
         this.helper = helper;
         tablesBuilder = new TablesBuilder();
-        fielsBuilder = new FielsBuilder();
+        fielsBuilder = new FieldsBuilder();
         whereBuilder = new WhereBuilder();
     }
 
