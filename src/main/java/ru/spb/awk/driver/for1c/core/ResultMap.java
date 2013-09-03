@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import ru.spb.awk.driver.for1c.been.Field1C;
 
 /**
  *

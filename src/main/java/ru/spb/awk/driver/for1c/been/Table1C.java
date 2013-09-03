@@ -4,6 +4,7 @@
  */
 package ru.spb.awk.driver.for1c.been;
 
+import java.beans.PropertyChangeEvent;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,7 +27,7 @@ public class Table1C extends Object1C {
     private int indexPage;
     private int recordsCount;
 
-    public void addField(Field1C field) {
+    private void addField(Field1C field) {
         if(field.getType() == TypeField1C.Version || field.getType() == TypeField1C.ShortShadowVersion) {
             fields.put(field.getName().toUpperCase(), field, 0);
         } else {
@@ -44,7 +45,7 @@ public class Table1C extends Object1C {
         }
     }
 
-    public void addIndex(Index1C indx) {
+    private void addIndex(Index1C indx) {
         indxs.put(indx.getName().toUpperCase(), indx);
     }
 
@@ -128,5 +129,26 @@ public class Table1C extends Object1C {
 
     void addType(TypeField1C value) {
         types.add(value);
+    }
+
+    @Override
+    public void addChild(ChildObject1C aThis) {
+        if(aThis instanceof Field1C) {
+            addField((Field1C) aThis);
+        } else if(aThis instanceof Index1C) {
+            addIndex((Index1C) aThis);
+        } else {
+            throw new IllegalArgumentException("" + aThis);
+        }
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        Object sourceEvent = evt.getSource();
+        if(sourceEvent instanceof Field1C) {
+            if("Type".equals(evt.getPropertyName())) {
+                addType((TypeField1C) evt.getNewValue());
+            }
+        }
     }
 }
