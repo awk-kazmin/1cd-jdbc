@@ -33,7 +33,7 @@ public class Select {
     private List<byte[]> records = new ArrayList<>();
     private int _cursor = -1;
     
-    public Select(FileHelper helper, List<Field> fields, List<TableBeen> tables, WhereGroup where) throws SQLException {
+    public Select(FileHelper helper, List<IColumn> fields, List<TableBeen> tables, WhereGroup where) throws SQLException {
         this.helper = helper;
         if(fields==null) {
             throw new SQLSyntaxErrorException("SELECT ?");
@@ -99,7 +99,7 @@ public class Select {
         return true;
     }
 
-    boolean next() throws SQLDataException {
+    public boolean next() throws SQLDataException {
         _cursor++;
         if(_cursor==records.size()) {
             return false;
@@ -107,11 +107,11 @@ public class Select {
         return true;
     }
 
-    int findColumn(String columnLabel) {
+    public int findColumn(String columnLabel) {
         return columns.getIndex(columnLabel) + 1;
     }
 
-    String getString(int columnIndex) throws SQLDataException {
+    public String getString(int columnIndex) throws SQLDataException {
         IColumn c = columns.getValue(columnIndex-1);
         int size = c.getSize();
         int offset = getOffset(c);
@@ -126,17 +126,17 @@ public class Select {
         return builder.toString().trim();
     }
 
-    boolean isAfterLast() {
+    public boolean isAfterLast() {
         return _cursor == records.size();
     }
 
-    boolean isBeforeFirst() {
+    public boolean isBeforeFirst() {
         return _cursor < 0;
     }
 
-    private void makeFields(List<Field> fields) throws SQLSyntaxErrorException {
-        for(Field f : fields) {
-            if(f.getField().equals("*")) {
+    private void makeFields(List<IColumn> fields) throws SQLSyntaxErrorException {
+        for(IColumn f : fields) {
+            if("*".equals(f.getAlias())) {
                 if(f.getSource() == null) {
                     int i = 0;
                     for (Table1C t : this.tables.values()) {
@@ -154,23 +154,10 @@ public class Select {
                     throw new SQLSyntaxErrorException("Field "+f.getName()+" allready exists in query.");
                 }
                 if (f.getSource() == null) {
-                    Field1C ff = null;
-                    for (Table1C table1C : tables.values()) {
-                        Field1C ff1 = table1C.getField(f.getField());
-                        if (ff1 != null) {
-                            if (ff != null) {
-                                throw new SQLSyntaxErrorException("Name " + f.getName() + " more in one table.");
-                            } else {
-                                ff = ff1;
-                            }
-                        }
-                    }
-                    if (ff == null) {
-                        throw new SQLSyntaxErrorException("Name " + f.getName() + " not found/");
-                    }
-                    this.columns.put(f.getName(), new IColumn.ColumnBuilder().make(ff));
+                    IColumn c = new IColumn.ColumnBuilder().bind(f, tables);
+                    this.columns.put(c.getAlias(), c);
                 } else {
-                    this.columns.put(f.getName(),new IColumn.ColumnBuilder().make(tables.get(f.getSource()).getField(f.getField())));
+                    this.columns.put(f.getName(),new IColumn.ColumnBuilder().make(tables.get(f.getSource()).getField(f.getName())));
                 }
             }
         }
@@ -259,6 +246,10 @@ public class Select {
             byte[] field = source.getBytes(table.getFieldIndex(c));
             System.arraycopy(field, 0, record, getOffset(c), field.length);
         }
+    }
+
+    ResultMap<String, ? extends IColumn> getColumns() {
+        return columns;
     }
 
 }

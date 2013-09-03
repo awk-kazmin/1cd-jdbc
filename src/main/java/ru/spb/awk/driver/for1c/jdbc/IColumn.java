@@ -4,15 +4,16 @@
  */
 package ru.spb.awk.driver.for1c.jdbc;
 
+import java.sql.SQLSyntaxErrorException;
+import java.util.Map;
 import ru.spb.awk.driver.for1c.been.Field1C;
+import ru.spb.awk.driver.for1c.been.Table1C;
 
 /**
  *
  * @author Василий Казьмин
  */
 public interface IColumn {
-
-    public boolean compareTo(String columnLabel);
 
     public Object getSource();
 
@@ -35,6 +36,24 @@ public interface IColumn {
             return new IColumnImpl(field1C, alias);
         }
 
+        IColumn bind(IColumn f, Map<String, Table1C> tables) throws SQLSyntaxErrorException {
+            Field1C ff = null;
+            for (Table1C table1C : tables.values()) {
+                Field1C ff1 = table1C.getField(f.getName());
+                if (ff1 != null) {
+                    if (ff != null) {
+                        throw new SQLSyntaxErrorException("Name " + f.getName() + " more in one table.");
+                    } else {
+                        ff = ff1;
+                    }
+                }
+            }
+            if (ff == null) {
+                throw new SQLSyntaxErrorException("Name " + f.getName() + " not found/");
+            }
+            return new IColumn.ColumnBuilder().make(ff);
+        }
+
         private class IColumnImpl implements IColumn {
 
             private String alias;
@@ -49,10 +68,6 @@ public interface IColumn {
                 this.alias = alias;
             }
 
-            @Override
-            public boolean compareTo(String columnLabel) {
-                return field.getName().equalsIgnoreCase(columnLabel);
-            }
 
             @Override
             public Object getSource() {
