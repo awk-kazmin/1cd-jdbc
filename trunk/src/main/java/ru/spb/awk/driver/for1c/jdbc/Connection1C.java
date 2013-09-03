@@ -455,5 +455,10 @@ public class Connection1C implements Connection {
         public int getSize() {
             return 515 * 10;
         }
+
+        @Override
+        public String getAlias() {
+            return this.name();
+        }
     }
 }

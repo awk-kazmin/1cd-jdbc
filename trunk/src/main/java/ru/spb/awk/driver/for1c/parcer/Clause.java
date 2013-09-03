@@ -6,7 +6,6 @@ package ru.spb.awk.driver.for1c.parcer;
 
 import java.sql.SQLSyntaxErrorException;
 import java.util.List;
-import javax.naming.OperationNotSupportedException;
 import ru.spb.awk.driver.for1c.jdbc.Cursor1C;
 
 /**

@@ -68,11 +68,14 @@ public class Select {
         if(i>0) {
             alias_suffix += i;
         }
+        IColumn.ColumnBuilder builder = new IColumn.ColumnBuilder();
+        
         for (Field1C field1C : t.getFields()) {
-            if(columns.containsKey(field1C.getName()+alias_suffix)) {
-                throw new SQLSyntaxErrorException("Field " +field1C.getName() + " allready exists in query.");
+            IColumn c = builder.make(field1C, field1C.getName()+alias_suffix);
+            if(columns.containsKey(c.getAlias())) {
+                throw new SQLSyntaxErrorException("Field " +c.getAlias() + " allready exists in query.");
             }
-            columns.put(field1C.getName() + alias_suffix, field1C);
+            columns.put(c.getAlias(), c);
         }
     }
 
@@ -165,9 +168,9 @@ public class Select {
                     if (ff == null) {
                         throw new SQLSyntaxErrorException("Name " + f.getName() + " not found/");
                     }
-                    this.columns.put(f.getName(), ff);
+                    this.columns.put(f.getName(), new IColumn.ColumnBuilder().make(ff));
                 } else {
-                    this.columns.put(f.getName(),tables.get(f.getSource()).getField(f.getField()));
+                    this.columns.put(f.getName(),new IColumn.ColumnBuilder().make(tables.get(f.getSource()).getField(f.getField())));
                 }
             }
         }

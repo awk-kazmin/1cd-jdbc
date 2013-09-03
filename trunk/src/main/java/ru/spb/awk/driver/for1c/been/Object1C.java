@@ -4,11 +4,13 @@
  */
 package ru.spb.awk.driver.for1c.been;
 
+import java.beans.PropertyChangeListener;
+
 /**
  *
  * @author Василий Казьмин
  */
-public class Object1C {
+public abstract class Object1C implements PropertyChangeListener {
     private String name;
 
     /**
@@ -24,4 +26,6 @@ public class Object1C {
     public void setName(String name) {
         this.name = name;
     }
+
+    public abstract void addChild(ChildObject1C aThis);
 }
