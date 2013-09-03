@@ -8,7 +8,6 @@ import java.sql.SQLException;
 import java.sql.SQLSyntaxErrorException;
 import java.util.ArrayList;
 import java.util.List;
-import ru.spb.awk.driver.for1c.jdbc.Field;
 
 /**
  *

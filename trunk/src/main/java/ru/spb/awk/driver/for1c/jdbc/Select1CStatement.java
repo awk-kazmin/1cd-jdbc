@@ -11,7 +11,9 @@ import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import ru.spb.awk.driver.for1c.parcer.SelectBuilder;
 import ru.spb.awk.driver.for1c.parcer.cc.SQL.ParseException;
+import ru.spb.awk.driver.for1c.parcer.cc.SQL.SQLParser;
 
 /**
  *
@@ -27,10 +29,12 @@ class Select1CStatement implements Statement {
     @Override
     public ResultSet executeQuery(String sql) throws SQLException {
         try {
-            SimpleResultSet1C simpleResultSet1C = new SimpleResultSet1C(connection);
-            DataSource1C dataSource1C = new DataSource1C(connection, sql);
-            simpleResultSet1C.setDataSource(dataSource1C);
-            return simpleResultSet1C;
+            SelectBuilder builder = new SelectBuilder(connection.getHelper());
+            SQLParser parser = SQLParser.makeParser(sql, builder);
+            parser.Input();
+            SimpleResultSet1C rs = new SimpleResultSet1C(connection);
+            rs.setDataSource(builder.create());
+            return rs;
         } catch (ParseException ex) {
             Logger.getLogger(Select1CStatement.class.getName()).log(Level.SEVERE, null, ex);
             throw new SQLException(ex);

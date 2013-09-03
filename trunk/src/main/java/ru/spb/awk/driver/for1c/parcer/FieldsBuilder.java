@@ -4,18 +4,18 @@
  */
 package ru.spb.awk.driver.for1c.parcer;
 
-import ru.spb.awk.driver.for1c.jdbc.Field;
 import java.sql.SQLSyntaxErrorException;
 import java.util.ArrayList;
 import java.util.List;
+import ru.spb.awk.driver.for1c.jdbc.IColumn;
 
 /**
  *
  * @author Василий Казьмин
  */
-public class FieldsBuilder extends AbstractBuilder<List<Field>> {
+public class FieldsBuilder extends AbstractBuilder<List<IColumn>> {
 
-    private final List<Field> fields = new ArrayList<>();
+    private final List<IColumn> fields = new ArrayList<>();
 
     /**
      *
@@ -33,7 +33,7 @@ public class FieldsBuilder extends AbstractBuilder<List<Field>> {
     
     
     @Override
-    public List<Field> create() {
+    public List<IColumn> create() {
         return fields;
     }
 

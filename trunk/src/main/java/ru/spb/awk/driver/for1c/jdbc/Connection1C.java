@@ -34,6 +34,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import ru.spb.awk.driver.for1c.been.Table1C;
 import ru.spb.awk.driver.for1c.core.FileHelper;
+import ru.spb.awk.driver.for1c.core.ResultMap;
 
 /**
  *
@@ -393,7 +394,7 @@ public class Connection1C implements Connection {
     ResultSet getTables(String catalog, String schemaPattern, String tableNamePattern, String[] types) throws SQLException {
 
         try {
-            Set<TableColumns> columns = EnumSet.allOf(TableColumns.class);
+            ResultMap<String, TableColumns> columns = ResultMap.allOf(TableColumns.class);
             SimpleResultSet1C rs = new SimpleResultSet1C(this);
             rs.setColumns(columns);
             for (int i = 0; i < raf.getTables(); i++) {
@@ -433,11 +434,6 @@ public class Connection1C implements Connection {
         REF_GENERATION; // String => specifies how values in SELF_REFERENCING_COL_NAME are created. Values are "SYSTEM", "USER", "DERIVED". (may be null)
 
 
-
-        @Override
-        public boolean compareTo(String columnLabel) {
-            return this.name().equalsIgnoreCase(columnLabel);
-        }
 
 
 

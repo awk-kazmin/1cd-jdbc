@@ -23,9 +23,8 @@ import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
+import ru.spb.awk.driver.for1c.core.ResultMap;
 
 /**
  *
@@ -33,15 +32,15 @@ import java.util.Set;
  */
 public class SimpleResultSet1C extends AbstractResultSet {
 
-    private Set<? extends IColumn> columns;
+    private ResultMap<String, ? extends IColumn> columns;
     private final Connection1C connection;
-    private DataSource1C dataSource1C;
+    private Select dataSource1C;
 
     SimpleResultSet1C(Connection1C aThis) {
         connection = aThis;
     }
 
-    void setColumns(Set<? extends IColumn> columns) {
+    void setColumns(ResultMap<String, ? extends IColumn> columns) {
         this.columns = columns;
     }
 
@@ -292,18 +291,7 @@ public class SimpleResultSet1C extends AbstractResultSet {
 
     @Override
     public int findColumn(String columnLabel) throws SQLException {
-        if(dataSource1C == null) {
-            Iterator<? extends IColumn> iterator = columns.iterator();
-            for (int i = 0; i < columns.size(); i++) {
-                IColumn item = iterator.next();
-                if (item.compareTo(columnLabel)) {
-                    return i+1;
-                }
-            }
-        } else {
-            return dataSource1C.findColumn(columnLabel);
-        }
-        throw new SQLException("Column " + columnLabel + " not found.");
+        return columns.getIndex(columnLabel) + 1;
     }
 
     @Override
@@ -996,7 +984,7 @@ public class SimpleResultSet1C extends AbstractResultSet {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    void setDataSource(DataSource1C dataSource1C) {
-        this.dataSource1C = dataSource1C;
+    void setDataSource(Select dataSource1C) {
+        columns = dataSource1C.getColumns();
     }
 }
