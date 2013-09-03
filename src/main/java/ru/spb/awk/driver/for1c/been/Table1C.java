@@ -16,8 +16,7 @@ import ru.spb.awk.driver.for1c.jdbc.IColumn;
  *
  * @author Василий Казьмин
  */
-public class Table1C {
-    private String name;
+public class Table1C extends Object1C {
     ResultMap<String, Field1C> fields = new ResultMap<>();
     Map<String, Index1C> indxs = new HashMap<>();
     Set<TypeField1C> types = new HashSet<>();
@@ -26,14 +25,6 @@ public class Table1C {
     private int blobPage;
     private int indexPage;
     private int recordsCount;
-
-    public void setName(String value) {
-        name = value;
-    }
-
-    public String getName() {
-        return name;
-    }
 
     public void addField(Field1C field) {
         if(field.getType() == TypeField1C.Version || field.getType() == TypeField1C.ShortShadowVersion) {

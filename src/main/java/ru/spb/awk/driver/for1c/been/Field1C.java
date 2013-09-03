@@ -11,9 +11,8 @@ import ru.spb.awk.driver.for1c.jdbc.IColumn;
  * Class Field1C is representation field record in table 1cd file.
  * @author Василий Казьмин
  */
-public class Field1C implements IColumn {
+public class Field1C extends Object1C implements IColumn {
     
-    private String name;
     private TypeField1C type;
     private int lenght;
     private boolean nullable;
@@ -26,13 +25,8 @@ public class Field1C implements IColumn {
     }
 
     public void setName(String value) {
-        name = value;
+        super.setName(value);
         source.addField(this);
-    }
-
-    @Override
-    public String getName() {
-        return name;
     }
 
     public void setType(TypeField1C value) {
@@ -70,7 +64,7 @@ public class Field1C implements IColumn {
 
     @Override
     public boolean compareTo(String columnLabel) {
-        return name.equalsIgnoreCase(columnLabel);
+        return getName().equalsIgnoreCase(columnLabel);
     }
 
 
@@ -84,6 +78,27 @@ public class Field1C implements IColumn {
     }
 
     public void setCaseSensitive(boolean equals) {
-        ignoreCase = !equals;
+        setIgnoreCase(!equals);
+    }
+
+    /**
+     * @return the precision
+     */
+    public int getPrecision() {
+        return precision;
+    }
+
+    /**
+     * @return the ignoreCase
+     */
+    public boolean isIgnoreCase() {
+        return ignoreCase;
+    }
+
+    /**
+     * @param ignoreCase the ignoreCase to set
+     */
+    public void setIgnoreCase(boolean ignoreCase) {
+        this.ignoreCase = ignoreCase;
     }
 }
