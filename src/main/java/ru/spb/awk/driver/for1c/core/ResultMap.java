@@ -16,12 +16,22 @@ import java.util.List;
 public class ResultMap<K, V> extends HashMap<K, V> {
 
     public static <T extends Enum> ResultMap<String, T> allOf(Class<T> aClass) {
-        ResultMap<String, T> items = new ResultMap<String, T>();
+        ResultMap<String, T> items = new ResultMap<>();
         for(T c : aClass.getEnumConstants()) {
             items.put(c.name(), c);
         }
         return items;
     }
+    public static ResultMap<String, String> allOfStringList(List<String> list) {
+        ResultMap<String, String> items = new ResultMap<>();
+        for(String c : list) {
+            items.put(c, c);
+        }
+        return items;
+    }
+    
+    
+    
     List<K> indx = new ArrayList<>();
 
     @Override
