@@ -6,100 +6,87 @@ package ru.spb.awk.driver.for1c.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import ru.spb.awk.driver.for1c.core.ResultMap;
 
 /**
  *
  * @author Василий Казьмин
  */
-public abstract class AbstractResultSet implements ResultSet {
-    private boolean closed = false;
-    private int cursor = -1;
+public abstract class AbstractResultSet<T extends ResultMap<String, ?>> implements ResultSet {
+    private final Cursor<T> c;
 
-    List data = new ArrayList<>();
+    public AbstractResultSet(T[] list) {
+        c = new Cursor<>(list);
+    }
+    
+    
 
     @Override
     public void afterLast() throws SQLException {
-        cursor = data.size();
+        c.isAfterLast();
     }
 
     @Override
     public void beforeFirst() throws SQLException {
-        cursor = -1;
+        c.beforeFirst();
     }
 
     @Override
     public boolean first() throws SQLException {
-        cursor = 0;
-        return true;
+        return c.first();
     }
 
     @Override
     public int getRow() throws SQLException {
-        return cursor + 1;
+        return c.getRow();
     }
 
     @Override
     public boolean isAfterLast() throws SQLException {
-        return cursor == data.size();
+        return c.isAfterLast();
     }
 
     @Override
     public boolean isBeforeFirst() throws SQLException {
-        return cursor < 0;
+        return c.isBeforeFirst();
     }
 
     @Override
     public boolean isClosed() throws SQLException {
-        return closed;
+        return c.isClosed();
     }
 
     @Override
     public boolean isFirst() throws SQLException {
-        return cursor == 0;
+        return c.isFirst();
     }
 
     @Override
     public boolean isLast() throws SQLException {
-        return cursor == data.size() - 1;
+        return c.isLast();
     }
 
     @Override
     public boolean last() throws SQLException {
-        cursor = data.size() - 1;
-        return cursor == data.size() - 1;
+        return c.last();
     }
 
     @Override
     public boolean next() throws SQLException {
-        cursor++;
-        return cursor < data.size();
+        return c.next();
     }
 
     @Override
     public boolean previous() throws SQLException {
-        cursor --;
-        return cursor >=0;
+        return c.previous();
     }
 
     @Override
     public void close() throws SQLException {
-        closed = true;
-    }
-    
-    public Object get() throws SQLException {
-        validateGetData();
-        return data.get(cursor);
+        c.close();
     }
 
-    public void add(Object record) {
-        data.add(record);
-    }
-    
-    private void validateGetData() throws SQLException {
-        if(isAfterLast() || isBeforeFirst() || isClosed()) {
-            throw new SQLException("Not valid position");
-        }
+    protected Cursor<T> getCursor() {
+        return c;
     }
 }

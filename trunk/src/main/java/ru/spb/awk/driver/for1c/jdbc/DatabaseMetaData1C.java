@@ -9,7 +9,10 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.RowIdLifetime;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import ru.spb.awk.driver.for1c.core.ResultMap;
 
 /**
  *
@@ -634,13 +637,22 @@ public class DatabaseMetaData1C implements DatabaseMetaData {
 
     @Override
     public ResultSet getCatalogs() throws SQLException {
-        return new ArrayResultSet<>(Collections.singletonList(connection.getCatalog()));
+        ResultMap<String, String>[] list = new ResultMap[1];
+        list[0] = new ResultMap<>();
+        list[0].put("TABLE_CAT", connection.getCatalog());
+        return new ArrayResultSet<>(list);
     }
 
     @Override
     public ResultSet getTableTypes() throws SQLException {
-        ArrayResultSet<String> rs = new ArrayResultSet<>(Config1C.getTableTypes());
-        return rs;
+        List<String> tableTypes = Config1C.getTableTypes();
+        ResultMap<String, String>[] list = new ResultMap[tableTypes.size()];
+        for(int i = 0 ; i < list.length; i ++) {
+            String t = tableTypes.get(i);
+            list[i] = new ResultMap<>();
+            list[i].put("TABLE_TYPE", t);
+        }
+        return new ArrayResultSet<>(list);
     }
 
     @Override

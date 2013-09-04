@@ -23,17 +23,17 @@ import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
-import java.util.List;
 import java.util.Map;
+import ru.spb.awk.driver.for1c.core.ResultMap;
 
 /**
  *
  * @author Василий Казьмин
  */
-class ArrayResultSet<T> extends AbstractResultSet {
+class ArrayResultSet<T extends ResultMap<String, ?>> extends AbstractResultSet<T> {
     
-    ArrayResultSet(List<T> list) {
-        data = list;
+    ArrayResultSet(T[] list) {
+        super(list);
     }
 
 
@@ -224,12 +224,12 @@ class ArrayResultSet<T> extends AbstractResultSet {
 
     @Override
     public Object getObject(int columnIndex) throws SQLException {
-         return get();
+         return getCursor().get().getValue(columnIndex-1);
     }
 
     @Override
     public Object getObject(String columnLabel) throws SQLException {
-        return get();
+        return getCursor().get().get(columnLabel);
     }
 
     @Override

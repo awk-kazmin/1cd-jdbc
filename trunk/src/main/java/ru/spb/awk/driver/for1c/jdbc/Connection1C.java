@@ -398,12 +398,18 @@ public class Connection1C implements Connection {
             SimpleResultSet1C rs = new SimpleResultSet1C(this);
             rs.setColumns(columns);
             for (int i = 0; i < raf.getTables(); i++) {
-                String[] row = new String[10];
+                ResultMap<String, String> row = new ResultMap<>();
                 Table1C table1C = raf.getTable(i);
-                row[0] = getCatalog();
-                row[2] = table1C.getName();
-                row[3] = table1C.getTypeName();
-                row[4] = "";
+                row.put(columns.getKey(0), getCatalog());
+                row.put(columns.getKey(1), "");
+                row.put(columns.getKey(2), table1C.getName());
+                row.put(columns.getKey(3), table1C.getTypeName());
+                row.put(columns.getKey(4), "");
+                row.put(columns.getKey(5), "");
+                row.put(columns.getKey(6), "");
+                row.put(columns.getKey(7), "");
+                row.put(columns.getKey(8), "");
+                row.put(columns.getKey(9), "");
                 rs.add(row);
                 
             }

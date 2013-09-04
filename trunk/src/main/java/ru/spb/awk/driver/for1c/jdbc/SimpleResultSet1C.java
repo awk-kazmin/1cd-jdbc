@@ -37,6 +37,7 @@ public class SimpleResultSet1C extends AbstractResultSet {
     private Select dataSource1C;
 
     SimpleResultSet1C(Connection1C aThis) {
+        super(new ResultMap[0]);
         connection = aThis;
     }
 
@@ -44,11 +45,11 @@ public class SimpleResultSet1C extends AbstractResultSet {
         this.columns = columns;
     }
 
-    void add(Object[] args) throws SQLException {
-        if (args.length != columns.size()) {
-            throw new SQLException("Columns size " + columns.size() + " != arg size " + args.length);
+    void add(ResultMap<String, ?> args) throws SQLException {
+        if (args.size() != columns.size()) {
+            throw new SQLException("Columns size " + columns.size() + " != arg size " + args.size());
         }
-        super.add(args);
+        getCursor().add(args);
     }
 
     @Override
@@ -91,14 +92,7 @@ public class SimpleResultSet1C extends AbstractResultSet {
     @Override
     public String getString(int columnIndex) throws SQLException {
         if(dataSource1C==null) {
-            if (get() instanceof Object[]) {
-                Object[] row = (Object[]) get();
-                if (row.length < columnIndex || columnIndex < 1) {
-                    throw new SQLException(new IndexOutOfBoundsException("Bad index " + columnIndex + " for " + row.length + " lenght array."));
-                }
-                return "" + row[columnIndex - 1];
-            }
-            throw new SQLException("Data row error. " + get());
+            return "" + getCursor().get().getValue(columnIndex);
         } else {
             return dataSource1C.getString(columnIndex);
         }
