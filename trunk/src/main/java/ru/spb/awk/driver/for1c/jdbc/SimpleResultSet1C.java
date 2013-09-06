@@ -54,34 +54,22 @@ public class SimpleResultSet1C extends AbstractResultSet {
 
     @Override
     public boolean first() throws SQLException {
-        if (dataSource1C == null) {
-            return super.first();
-        }
-        return dataSource1C.first();
+        return super.first();
     }
 
     @Override
     public boolean next() throws SQLException {
-        if (dataSource1C == null) {
-            return super.next();
-        }
-        return dataSource1C.next();
+        return super.next();
     }
 
     @Override
     public boolean isAfterLast() throws SQLException {
-        if (dataSource1C == null) {
-            return super.isAfterLast(); //To change body of generated methods, choose Tools | Templates.
-        }
-        return dataSource1C.isAfterLast();
+        return super.isAfterLast(); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public boolean isBeforeFirst() throws SQLException {
-        if (dataSource1C == null) {
-            return super.isBeforeFirst(); //To change body of generated methods, choose Tools | Templates.
-        }
-        return dataSource1C.isBeforeFirst();
+        return super.isBeforeFirst(); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
@@ -91,11 +79,7 @@ public class SimpleResultSet1C extends AbstractResultSet {
 
     @Override
     public String getString(int columnIndex) throws SQLException {
-        if(dataSource1C==null) {
-            return "" + getCursor().get().getValue(columnIndex);
-        } else {
-            return dataSource1C.getString(columnIndex);
-        }
+        return "" + getCursor().get().getValue(columnIndex);
     }
 
     @Override
@@ -980,5 +964,6 @@ public class SimpleResultSet1C extends AbstractResultSet {
 
     void setDataSource(Select dataSource1C) {
         columns = dataSource1C.getColumns();
+        getCursor().setData(dataSource1C.getData());
     }
 }

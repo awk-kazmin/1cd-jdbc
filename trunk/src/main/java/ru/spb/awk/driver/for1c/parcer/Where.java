@@ -4,6 +4,7 @@
  */
 package ru.spb.awk.driver.for1c.parcer;
 
+import ru.spb.awk.driver.for1c.core.ResultMap;
 import ru.spb.awk.driver.for1c.jdbc.Cursor1C;
 
 /**
@@ -19,6 +20,11 @@ public class Where implements IWhere {
 
     @Override
     public Result test(Cursor1C left, Cursor1C right, Result result) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public boolean test(ResultMap<String, ?> record) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

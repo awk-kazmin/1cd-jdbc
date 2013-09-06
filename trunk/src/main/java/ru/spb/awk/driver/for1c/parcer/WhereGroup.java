@@ -9,6 +9,7 @@ import java.sql.SQLSyntaxErrorException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import ru.spb.awk.driver.for1c.core.ResultMap;
 import ru.spb.awk.driver.for1c.jdbc.Cursor1C;
 import ru.spb.awk.driver.for1c.parcer.IWhere.Result;
 
@@ -29,6 +30,11 @@ public class WhereGroup implements Iterable<IWhere>, IWhere {
             this.left = left;
             this.right = right;
         }
+    }
+
+    @Override
+    public boolean test(ResultMap<String, ?> record) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     public static enum WhereOperation {
 

@@ -5,9 +5,7 @@
 package ru.spb.awk.driver.for1c.jdbc;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import ru.spb.awk.driver.for1c.core.ResultMap;
 
 /**
@@ -18,7 +16,7 @@ public class Cursor<T extends ResultMap<String, ?>> {
     private boolean closed = false;
     private int cursor = -1;
 
-    T[] data;
+    private T[] data;
     
     public Cursor(T[] list) {
         data = list;
@@ -94,5 +92,9 @@ public class Cursor<T extends ResultMap<String, ?>> {
         if(isAfterLast() || isBeforeFirst() || isClosed()) {
             throw new SQLException("Not valid position");
         }
+    }
+    
+    public void setData(T[] list) {
+        data = list;
     }
 }
