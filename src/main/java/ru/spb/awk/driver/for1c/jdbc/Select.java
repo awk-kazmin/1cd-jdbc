@@ -30,8 +30,7 @@ public class Select {
     ResultMap<String, IColumn> columns = new ResultMap<>();
     Map<String, Cursor1C> tables_cursors = new HashMap<>();
     private final FileHelper helper;
-    private List<byte[]> records = new ArrayList<>();
-    private int _cursor = -1;
+    private List<ResultMap<String, ?>> records = new ArrayList<>();
     
     public Select(FileHelper helper, List<IColumn> fields, List<TableBeen> tables, WhereGroup where) throws SQLException {
         this.helper = helper;
@@ -91,49 +90,6 @@ public class Select {
         }
     }
 
-    public boolean first() throws SQLDataException {
-        if(records.isEmpty()) {
-            return false;
-        }
-        _cursor = 0;
-        return true;
-    }
-
-    public boolean next() throws SQLDataException {
-        _cursor++;
-        if(_cursor==records.size()) {
-            return false;
-        }
-        return true;
-    }
-
-    public int findColumn(String columnLabel) {
-        return columns.getIndex(columnLabel) + 1;
-    }
-
-    public String getString(int columnIndex) throws SQLDataException {
-        IColumn c = columns.getValue(columnIndex-1);
-        int size = c.getSize();
-        int offset = getOffset(c);
-        byte[] record = records.get(_cursor);
-        StringBuilder builder = new StringBuilder();
-        
-        for(int i = offset; i<offset+size;i+=2) {
-            char ch = getChar(record, i);
-            if(ch==0) break;
-            builder.append(ch);
-        }
-        return builder.toString().trim();
-    }
-
-    public boolean isAfterLast() {
-        return _cursor == records.size();
-    }
-
-    public boolean isBeforeFirst() {
-        return _cursor < 0;
-    }
-
     private void makeFields(List<IColumn> fields) throws SQLSyntaxErrorException {
         for(IColumn f : fields) {
             if("*".equals(f.getAlias())) {
@@ -164,27 +120,17 @@ public class Select {
     }
 
     private void makeRecords(WhereGroup where) throws IOException, SQLSyntaxErrorException, SQLException {
-        if (tables_cursors.size() == 1) {
-            Cursor1C c = tables_cursors.values().iterator().next();
-            for (c.first(); !c.isAfterLast(); c.next()) {
-                records.add(makeRecord(c, null, where));
-            }
-        } else {
-            for (Map.Entry<String, Cursor1C> e : tables_cursors.entrySet()) {
-                Cursor1C c = e.getValue();
-                for (c.first(); !c.isAfterLast(); c.next()) {
-                    for (Map.Entry<String, Cursor1C> eT : tables_cursors.entrySet()) {
-                        if (!eT.getKey().equals(e.getKey())) {
-                            Cursor1C cT = e.getValue();
-                            for (cT.first(); !cT.isAfterLast(); cT.next()) {
-                                byte[] r = makeRecord(c, cT, where);
-                                if (r != null) {
-                                    records.add(r);
-                                }
-                            }
-                        }
-                    }
+
+
+        for (Map.Entry<String, Cursor1C> e : tables_cursors.entrySet()) {
+            Cursor1C c = e.getValue();
+            for(c.first();!c.isAfterLast();c.next()) {
+                ResultMap<String, ?> record = new ResultMap<>();
+                if(where.test(record)) {
+                    records.add(record);
                 }
+                makeRecords(e, where, c);
+                
             }
         }
     }
@@ -197,8 +143,8 @@ public class Select {
         return size;
     }
 
-    private byte[] makeRecord(Cursor1C source, Cursor1C target, WhereGroup where) throws SQLSyntaxErrorException, SQLException {
-        byte[] result = null;
+    private ResultMap<String, ?> makeRecord(Cursor1C source, Cursor1C target, WhereGroup where) throws SQLSyntaxErrorException, SQLException {
+        ResultMap<String, ?> result = null;
         switch(where.test(source, target)) {
             case BOTH:
                 result = both(source, target);
@@ -213,15 +159,15 @@ public class Select {
         return result;
     }
 
-    private byte[] both(Cursor1C source, Cursor1C target) {
-        byte[] record = new byte[getSize()];
+    private ResultMap<String, ?> both(Cursor1C source, Cursor1C target) {
+        ResultMap<String, ?> record = new ResultMap<>();
         fill(source, record);
         fill(target, record);
         return record;
     }
 
-    private byte[] one(Cursor1C source) {
-        byte[] record = new byte[getSize()];
+    private ResultMap<String, ?>one(Cursor1C source) {
+        ResultMap<String, ?>record = new ResultMap<>();
         fill(source, record);
         return record;
     }
@@ -240,16 +186,26 @@ public class Select {
         return (char) ((((int) record[i + 1]) << 8) + record[i]);
     }
 
-    private void fill(Cursor1C source, byte[] record) {
-        for(IColumn c : columns.values()) {
+    private void fill(Cursor1C source, ResultMap<String, ?> record) {
+        for(IColumn c : columns.valuesByOrder()) {
             Table1C table = (Table1C) c.getSource();
-            byte[] field = source.getBytes(table.getFieldIndex(c));
-            System.arraycopy(field, 0, record, getOffset(c), field.length);
+            record.put(c.getAlias(), source.getBytes(table.getFieldIndex(c)));
         }
     }
 
     ResultMap<String, ? extends IColumn> getColumns() {
         return columns;
+    }
+
+    ResultMap[] getData() {
+        return records.toArray(new ResultMap[records.size()]);
+    }
+
+    private void makeRecords(Map.Entry<String, Cursor1C>[] e, WhereGroup where, Cursor1C ... cursors) {
+        for(Map.Entry<String, Cursor1C> et : tables_cursors.entrySet()) {
+            
+        }
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
 }
